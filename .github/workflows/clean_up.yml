@@ -1,0 +1,31 @@
+name: Clean up stale preview directories
+
+on:
+  workflow_dispatch:
+  schedule:
+    # 日本時間の深夜に毎日実行する
+    - cron: "30 18 * * *" 
+
+jobs:
+  cleanup:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: gh-pages
+
+      - name: Remove stale preview directories
+        run: |
+          ls -d */ | cut -f1 -d'/' > /tmp/preview_dirs.txt
+          gh pr list --repo GoWorkshopConference/2025 --json number --jq ".[].number" > /tmp/open_prs.txt
+          comm -23 /tmp/preview_dirs.txt /tmp/open_prs.txt | xargs rm -rf
+
+      - name: Commit and push changes
+        run: |
+          git config --local user.email "github-actions[bot]@users.noreply.github.com"
+          git config --local user.name "github-actions[bot]"
+          git add -A
+          git commit -m "Remove stale directories"
+          git push origin HEAD:gh-pages
