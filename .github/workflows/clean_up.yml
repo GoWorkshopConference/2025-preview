@@ -21,6 +21,8 @@ jobs:
           ls -d */ | cut -f1 -d'/' > /tmp/preview_dirs.txt
           gh pr list --repo GoWorkshopConference/2025 --json number --jq ".[].number" > /tmp/open_prs.txt
           comm -23 /tmp/preview_dirs.txt /tmp/open_prs.txt | xargs rm -rf
+        env:
+          GH_TOKEN: ${{ github.token }}
 
       - name: Commit and push changes
         run: |
